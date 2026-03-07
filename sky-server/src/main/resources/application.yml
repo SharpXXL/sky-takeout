@@ -3,37 +3,24 @@ server:
 
 spring:
   profiles:
-    active: dev
+    active: dev # 激活开发环境
   main:
-    allow-circular-references: true
+    allow-circular-references: true # Spring Boot 3/4 默认禁用循环引用，保持开启以兼容老代码
   datasource:
-    druid:
-      driver-class-name: ${sky.datasource.driver-class-name}
-      url: jdbc:mysql://${sky.datasource.host}:${sky.datasource.port}/${sky.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
-      username: ${sky.datasource.username}
-      password: ${sky.datasource.password}
+    # 优雅点：直接在这里定义好 URL 模板，数值从子配置文件或自定义属性中读取
+    driver-class-name: ${sky.datasource.driver-class-name}
+    url: jdbc:mysql://localhost:3306/sky_take_out?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
 
 mybatis:
-  #mapper配置文件
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.sky.entity
   configuration:
-    #开启驼峰命名
-    map-underscore-to-camel-case: true
+    map-underscore-to-camel-case: true # 开启驼峰转换
 
 logging:
   level:
-    com:
-      sky:
-        mapper: debug
-        service: info
-        controller: info
-
-sky:
-  jwt:
-    # 设置jwt签名加密时使用的秘钥
-    admin-secret-key: itcast
-    # 设置jwt过期时间
-    admin-ttl: 7200000
-    # 设置前端传递过来的令牌名称
-    admin-token-name: token
+    com.sky.mapper: debug
+    com.sky.service: info
+    com.sky.controller: info

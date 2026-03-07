@@ -4,6 +4,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
@@ -20,22 +22,11 @@ public class JwtUtil {
      */
     public static String createJWT(String secretKey, long ttlMillis, Map<String, Object> claims) {
         // 指定签名的时候使用的签名算法，也就是header那部分
-        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
-
-        // 生成JWT的时间
-        long expMillis = System.currentTimeMillis() + ttlMillis;
-        Date exp = new Date(expMillis);
-
-        // 设置jwt的body
-        JwtBuilder builder = Jwts.builder()
-                // 如果有私有声明，一定要先设置这个自己创建的私有的声明，这个是给builder的claim赋值，一旦写在标准的声明赋值之后，就是覆盖了那些标准的声明的
-                .setClaims(claims)
-                // 设置签名使用的签名算法和签名使用的秘钥
-                .signWith(signatureAlgorithm, secretKey.getBytes(StandardCharsets.UTF_8))
-                // 设置过期时间
-                .setExpiration(exp);
-
-        return builder.compact();
+        return Jwts.builder()
+                .claims(claims) // 设置负载
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes())) // 签名
+                .expiration(new Date(System.currentTimeMillis() + ttlMillis))
+                .compact();
     }
 
     /**
@@ -47,11 +38,11 @@ public class JwtUtil {
      */
     public static Claims parseJWT(String secretKey, String token) {
         // 得到DefaultJwtParser
-        Claims claims = Jwts.parser()
-                // 设置签名的秘钥
-                .setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8))
-                // 设置需要解析的jwt
-                .parseClaimsJws(token).getBody();
+        Claims claims = Jwts.parser()             // 1. 准备好一个“安检机” (获取构造器)
+                .verifyWith(Keys.hmacShaKeyFor(secretKey.getBytes())) // 2. 输入“正确密码” (设置验证密钥)
+                .build()                         // 3. 组装完毕，启动机器 (构建解析器)
+                .parseSignedClaims(token)          // 4. 把令牌丢进去检查 (解析签名)
+                .getPayload();                   // 5. 检查通过，取出里面的东西 (获取数据)
         return claims;
     }
 
