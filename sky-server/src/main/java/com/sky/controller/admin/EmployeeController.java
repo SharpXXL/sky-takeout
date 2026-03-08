@@ -72,9 +72,9 @@ public class EmployeeController {
         return Result.success();
     }
 
-//    @PostMapping
-//    public Result<Void> insert(EmployeeDTO employeeDTO){
-//        employeeService.insert(employeeDTO);
-//        return Result.success();
-//    }
+    @PostMapping
+    public Result<Void> insert(@RequestBody EmployeeDTO employeeDTO){
+        employeeService.insert(employeeDTO);
+        return Result.success();
+    }
 }
